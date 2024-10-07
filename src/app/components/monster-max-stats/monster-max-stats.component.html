@@ -1,4 +1,137 @@
-<header class="header-container">
+<app-page-navigation></app-page-navigation>
+<div class="header-container"> 
     <p class="page-title">Max Stat Calculator</p>
-    <app-page-navigation></app-page-navigation>
-</header>
+    <div class="monster-select-container">
+        <mat-form-field class="tms-dd monster-select">
+            <mat-select #monster
+                class="dqm-monster-select"
+                panelClass="monster-select-panel style-2"
+                (selectionChange)="onMonsterSelect($event)"
+                (openedChange)="searchBox.focus(); monsterListOpened();"
+                (value)="selectedMonster"
+                (placeholder)="selectedMonsterName"
+                required>
+                <mat-select-trigger>
+                    {{ selectedMonsterName }}
+                </mat-select-trigger>
+                <mat-option disable class="monster-search">
+                    <mat-form-field floatLable="never" class="width-140px" appearance="outline">
+                    <input #searchBox type="text" matInput (input)="searchMonsters($event.target.value)"
+                        [formControl]="searchInputCtrl" class="flex-start" placeholder="Search Monsters"
+                        autocomplete="off"/>
+                    
+                    <mat-icon matSuffix [inline]="true"
+                        (click)="onClearSearchMonstersClick(searchBox)">
+                    </mat-icon>
+                    </mat-form-field>
+                </mat-option>
+                <ng-container>
+                    <cdk-virtual-scroll-viewport #monsterListCdk [class]="filteredAvailableMonsters.length > 4 ? 'height-210px'
+                          : filteredAvailableMonsters.length < 1 ? 'height-0'
+                          : filteredAvailableMonsters.length === 1 ? 'height-48px'
+                          : filteredAvailableMonsters.length === 2 ? 'height-98px'
+                          : filteredAvailableMonsters.length === 3 ? 'height-147px'
+                          : 'height-196px'" [itemSize]="48" class="facility-selection-v-scroll" minBufferPx="500"
+                      maxBufferPx="5000">
+                      <div *cdkVirtualFor="
+                              let availableMonster of filteredAvailableMonsters;
+                              templateCacheSize: 0;
+                              trackBy: cdkTrackBy
+                          ">
+                        <mat-option [value]="availableMonster">
+                          <span>{{availableMonster?.name}}</span>
+                        </mat-option>
+                      </div>
+                    </cdk-virtual-scroll-viewport>
+                </ng-container>
+            </mat-select>
+        </mat-form-field>
+    </div>
+
+    <!-- ---------------------------Parent Section-------------------------------------------------->
+
+    <form [formGroup]="maxStatForm">
+    <mat-dialog-content class="se-mat-dialog-content">
+        <div class="row">      
+          <div class="inputName"><span style="color: #CC0000">*</span>Parent Type Select</div>
+           <mat-form-field class="form-input" appearance="outline">
+             <mat-select formControlName="parent1type" id="type-select" placeholder="Select Parent Type" required>
+               <mat-option *ngFor="let monsterType of monsterTypesList" [value]="monsterType">{{monsterType}}
+               </mat-option>
+             </mat-select>
+           </mat-form-field>
+           <mat-form-field class="form-input" appearance="outline">
+            <mat-select formControlName="parent2type" id="type-select" placeholder="Select Parent Type" required>
+              <mat-option *ngFor="let monsterType of monsterTypesList" [value]="monsterType">{{monsterType}}
+              </mat-option>
+            </mat-select>
+          </mat-form-field>
+          <div class="inputName"><span style="color: #CC0000">*</span>Parent Level Select</div>
+          <div>
+            <mat-slider min="1" max="100" step="1" value="1" thumbLabel tickInterval="1">
+                <input matSliderThumb formControlName="parent1level"/>
+            </mat-slider>
+            <mat-slider min="1" max="100" step="1" value="1" thumbLabel tickInterval="1">
+                <input matSliderThumb formControlName="parent2level"/>
+            </mat-slider>
+        </div>
+    </div>
+
+    <!-- ---------------------------Grandparent Section-------------------------------------------------->
+
+        <div class="row">      
+          <div class="inputName"><span style="color: #CC0000">*</span>Grandparent Type Select</div>
+           <mat-form-field class="form-input" appearance="outline">
+             <mat-select formControlName="gparent1type" id="type-select" placeholder="Select Grandparent Type" required>
+               <mat-option *ngFor="let monsterType of monsterTypesList" [value]="monsterType">{{monsterType}}
+               </mat-option>
+             </mat-select>
+           </mat-form-field>
+           <mat-form-field class="form-input" appearance="outline">
+            <mat-select formControlName="gparent2type" id="type-select" placeholder="Select Grandparent Type" required>
+              <mat-option *ngFor="let monsterType of monsterTypesList" [value]="monsterType">{{monsterType}}
+              </mat-option>
+            </mat-select>
+          </mat-form-field>
+          <mat-form-field class="form-input" appearance="outline">
+            <mat-select formControlName="gparent3type" id="type-select" placeholder="Select Grandparent Type" required>
+              <mat-option *ngFor="let monsterType of monsterTypesList" [value]="monsterType">{{monsterType}}
+              </mat-option>
+            </mat-select>
+          </mat-form-field>
+          <mat-form-field class="form-input" appearance="outline">
+            <mat-select formControlName="gparent4type" id="type-select" placeholder="Select Grandparent Type" required>
+              <mat-option *ngFor="let monsterType of monsterTypesList" [value]="monsterType">{{monsterType}}
+              </mat-option>
+            </mat-select>
+          </mat-form-field>     
+        </div>
+        <div>
+            <div class="inputName"><span style="color: #CC0000">*</span>Size Select</div>
+            <mat-slider min="1" max="100" step="1" value="1" thumbLabel tickInterval="1">
+                <input matSliderThumb formControlName="size"/>
+            </mat-slider>
+        </div>
+    </mat-dialog-content>
+    </form>
+
+    <div class="selected-monster-stats">
+        <br><span> Monster: {{ selectedMonsterName }} </span>
+        <br><span> Type: {{ type }}</span>
+        <br><span> Tactical Bonus: {{ tacticalType }}</span>
+        <div class = "stat-block">
+            <br><span> HP: {{ maxStats?.hp }}</span>
+            <br><span> MP: {{ maxStats?.mp }}</span>
+            <br><span> Attack: {{ maxStats?.attack }}</span>
+            <br><span> Defense: {{ maxStats?.defense }}</span>
+            <br><span> Agility: {{ maxStats?.agility }}</span>
+            <br><span> Wisdom: {{ maxStats?.wisdom }}</span>
+        </div>
+    </div>
+    <div class="button-wrapper">
+        <button mat-button
+            class="se-mat-dialog-btn se-mat-dialog-btn-prim"
+            (click)="onSubmit()">Submit
+        </button>
+    </div>
+</div>
