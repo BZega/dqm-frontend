@@ -12,7 +12,8 @@ export class MonsterService {
     public monsterList = new BehaviorSubject<Monster[]>(null);
     public selectedMonster$ = this.selectedMonster.asObservable();
     public monsterList$ = this.monsterList.asObservable();
-    
+    public getMaxStatsModalOpen = new BehaviorSubject(false);
+
     constructor(
         private http: HttpClient,
     ) {}

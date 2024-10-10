@@ -1,20 +1,23 @@
 <app-page-navigation></app-page-navigation>
-<div class="header-container">
-    
+<div class="header-container">  
     <p class="page-title">Monster Finder</p>
+    <!-- <div class="body-wrapper">
+    <div class="left-side">
+        <span>Parent select</span>
+    </div> -->
+    <!-- <div class="middle"> -->
     <div class="monster-select-container">
+    <span style="font-size: 30px; padding-top: 24px; padding-right: 8px;"> Monster: </span>
     <mat-form-field class="tms-dd monster-select">
         <mat-select #monster
             class="dqm-monster-select"
             panelClass="monster-select-panel style-2"
             (selectionChange)="onMonsterSelect($event)"
             (openedChange)="searchBox.focus(); monsterListOpened();"
-            [(value)]="selectedMonster"
+            [value]="selectedMonster"
             (placeholder)="selectedMonsterName"
             required>
-            <mat-select-trigger>
-                {{ selectedMonsterName }}
-            </mat-select-trigger>
+            
             <mat-option disable class="monster-search">
                 <mat-form-field floatLable="never" class="width-140px" appearance="outline">
                 <input #searchBox type="text" matInput (input)="searchMonsters($event.target.value)"
@@ -28,28 +31,29 @@
             </mat-option>
             <ng-container>
                 <cdk-virtual-scroll-viewport #monsterListCdk [class]="filteredAvailableMonsters.length > 4 ? 'height-210px'
-                      : filteredAvailableMonsters.length < 1 ? 'height-0'
-                      : filteredAvailableMonsters.length === 1 ? 'height-48px'
-                      : filteredAvailableMonsters.length === 2 ? 'height-98px'
-                      : filteredAvailableMonsters.length === 3 ? 'height-147px'
-                      : 'height-196px'" [itemSize]="48" class="facility-selection-v-scroll" minBufferPx="500"
-                  maxBufferPx="5000">
-                  <div *cdkVirtualFor="
-                          let availableMonster of filteredAvailableMonsters;
-                          templateCacheSize: 0;
-                          trackBy: cdkTrackBy
-                      ">
+                    : filteredAvailableMonsters.length < 1 ? 'height-0'
+                    : filteredAvailableMonsters.length === 1 ? 'height-48px'
+                    : filteredAvailableMonsters.length === 2 ? 'height-98px'
+                    : filteredAvailableMonsters.length === 3 ? 'height-147px'
+                    : 'height-196px'" [itemSize]="48" class="facility-selection-v-scroll" minBufferPx="50"
+                    maxBufferPx="10000">
+                <div *cdkVirtualFor="
+                    let availableMonster of filteredAvailableMonsters;
+                    templateCacheSize: 0;
+                    trackBy: cdkTrackBy">
                     <mat-option [value]="availableMonster">
                       <span>{{availableMonster?.name}}</span>
                     </mat-option>
-                  </div>
+                </div>
                 </cdk-virtual-scroll-viewport>
             </ng-container>
         </mat-select>
     </mat-form-field>
     </div>
+    <div class="monster-image-wrapper">
+            <img class="monster-image" [src]="getMonsterImage()" (alt)="selectedMonsterName">
+    </div>
     <div class="selected-monster-stats">
-        <br><span> Monster: {{ selectedMonsterName }} </span>
         <br><span> Type: {{ type }}</span>
         <br><span> Tactical Bonus: {{ tacticalType }}</span>
         <div class = "stat-block">
@@ -60,5 +64,15 @@
             <br><span> Agility: {{ maxStats?.agility }}</span>
             <br><span> Wisdom: {{ maxStats?.wisdom }}</span>
         </div>
+    <!-- </div> -->
+    </div>
+    <!-- <div class="right-side">
+        <span>Grandparent Select</span>
+    </div> -->
+    <div class="button-wrapper">
+        <button mat-button
+            class="se-mat-dialog-btn se-mat-dialog-btn-prim"
+            (click)="onMaxStatClick()">Max Stat Modifier
+        </button>
     </div>
 </div>

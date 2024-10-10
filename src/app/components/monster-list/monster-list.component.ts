@@ -4,6 +4,8 @@ import { Monster, Stats } from 'src/app/core/models/monster';
 import { combineLatest, debounceTime, distinctUntilChanged, filter, Observable, Subject, take, takeUntil, tap } from 'rxjs';
 import { MonsterService } from 'src/app/core/services/monster.service';
 import { CdkVirtualScrollViewport } from '@angular/cdk/scrolling';
+import { DialogService } from 'src/app/core/services/dialog.service';
+import { UiService } from 'src/app/core/services/ui.service';
 
 @Component({
   selector: 'app-monster-list',
@@ -12,6 +14,7 @@ import { CdkVirtualScrollViewport } from '@angular/cdk/scrolling';
 })
 export class MonsterListComponent implements OnInit, OnDestroy {
   @ViewChild('monsterListCdk') cdkVirtualScrollViewport: CdkVirtualScrollViewport;
+  @ViewChildren(CdkVirtualScrollViewport) cdkVsv: QueryList<CdkVirtualScrollViewport>;
   
   monsterSelect = new FormControl("");
   selectedMonster$ = this.monsterService.selectedMonster$;
@@ -29,7 +32,11 @@ export class MonsterListComponent implements OnInit, OnDestroy {
   monsterList$: Observable<Monster[]>;
 
 
-  constructor(private monsterService: MonsterService) { }
+  constructor(
+    private monsterService: MonsterService,
+    private dialogService: DialogService,
+    private uiService: UiService
+  ) { }
 
   ngOnInit(): void {
     combineLatest([this.selectedMonster$]).pipe(filter((monsters: Monster[]) => !!monsters))
@@ -71,6 +78,12 @@ export class MonsterListComponent implements OnInit, OnDestroy {
         console.log("Zega selected monster subscribe", this.selectedMonster);
         this.monsterService.selectedMonster.next(this.selectedMonster)
       })
+  }
+
+  ngAfterViewInit() {
+    this.cdkVsv.changes.pipe(takeUntil(this.ngUnsubscribe), take(2)).subscribe(x => {
+      if (this.cdkVsv.first) this.cdkVsv.first.scrollToIndex(this.uiService.scrollToIndex, 'auto');
+    });
   }
   
   ngOnDestroy(): void {
@@ -167,6 +180,30 @@ export class MonsterListComponent implements OnInit, OnDestroy {
           break;
       }
       this.maxStats = monster.maxStat;       
+    }
+  }
+
+  onMaxStatClick() {
+    const modalOpen = this.monsterService.getMaxStatsModalOpen.getValue();
+
+    if (!modalOpen) {
+      this.monsterService.getMaxStatsModalOpen.next(true);
+      const modalPromptRef = this.dialogService.getMonsterMaxStats(this.selectedMonster);
+      modalPromptRef.afterClosed().subscribe((maxStatMonster: Monster) => {
+        this.monsterService.getMaxStatsModalOpen.next(false);
+
+        if (maxStatMonster) {
+          this.getMonsterTypeAndTacticalType(maxStatMonster);
+        }
+      });
+    }
+  }
+
+  getMonsterImage() {
+    if (this.selectedMonsterName) {
+      return `./assets/monster-images/${this.selectedMonsterName}.jpg`;
+    } else {
+      return null;
     }
   }
 }
