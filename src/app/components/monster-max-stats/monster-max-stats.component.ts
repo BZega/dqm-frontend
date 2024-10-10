@@ -1,6 +1,7 @@
 import { CdkVirtualScrollViewport } from '@angular/cdk/scrolling';
 import { Component, OnInit, ViewChild } from '@angular/core';
 import { FormControl, UntypedFormControl, UntypedFormGroup } from '@angular/forms';
+import { MatDialogRef } from '@angular/material/dialog';
 import { BehaviorSubject, combineLatest, debounceTime, distinctUntilChanged, filter, Observable, Subject, takeUntil } from 'rxjs';
 import { Monster, Stats } from 'src/app/core/models/monster';
 import { MonsterService } from 'src/app/core/services/monster.service';
@@ -42,7 +43,10 @@ export class MonsterMaxStatsComponent implements OnInit {
   });
 
 
-  constructor(private monsterService: MonsterService) { }
+  constructor(
+    private monsterService: MonsterService,
+    public dialogRef: MatDialogRef<MonsterMaxStatsComponent>,
+  ) { }
 
   ngOnInit(): void {
     combineLatest([this.selectedMonster$]).pipe(filter((monsters: Monster[]) => !!monsters))
@@ -60,22 +64,11 @@ export class MonsterMaxStatsComponent implements OnInit {
         }
       );
 
-    this.monsterService.getAllMonsters().subscribe(monsters => {
-      this.allMonsters = monsters;
-      this.monsterSelectOptions = monsters;
-      this.selectedMonster = monsters[0];
-      this.monsterService.selectedMonster.next(this.selectedMonster);
-      this.selectedMonsterName = monsters[0].name;
-      this.getMonsterTypeAndTacticalType(this.selectedMonster);
-      this.monsterSelect.setValue(monsters[0].name);
-      this.filterMonsterOptions();
-    });
-
-    this.searchChanged.pipe(takeUntil(this.ngUnsubscribe),
-    debounceTime(100),
-    ).subscribe(_ => {
-      this.filterMonsterOptions();
-    });
+    // this.searchChanged.pipe(takeUntil(this.ngUnsubscribe),
+    // debounceTime(100),
+    // ).subscribe(_ => {
+    //   this.filterMonsterOptions();
+    // });
 
     this.monsterService.selectedMonster$.pipe(distinctUntilChanged())
       .pipe(takeUntil(this.ngUnsubscribe))
@@ -90,8 +83,8 @@ export class MonsterMaxStatsComponent implements OnInit {
 
       this.maxStatForm.get('parent1type').setValue('None');
       this.maxStatForm.get('parent2type').setValue('None');
-      this.maxStatForm.get('parent1level').setValue('1');
-      this.maxStatForm.get('parent2level').setValue('1');
+      this.maxStatForm.get('parent1level').setValue('10');
+      this.maxStatForm.get('parent2level').setValue('10');
       this.maxStatForm.get('gparent1type').setValue('None');
       this.maxStatForm.get('gparent2type').setValue('None');
       this.maxStatForm.get('gparent3type').setValue('None');
@@ -233,11 +226,7 @@ export class MonsterMaxStatsComponent implements OnInit {
     this.monsterService.getMonsterMaxStat(this.selectedMonsterName, parent1type, parent2type, parent1level, parent2level, gparent1type, gparent2type, gparent3type, gparent4type, size).subscribe(
       monster => {
       if(monster) {
-        this.selectedMonster = monster;
-        this.selectedMonsterName = monster.name;
-        this.monsterService.selectedMonster.next(monster);
-        this.getMonsterTypeAndTacticalType(monster);
-        this.monsterSelect.setValue(this.selectedMonsterName);
+        this.dialogRef.close(monster);
       }
     });
   }
