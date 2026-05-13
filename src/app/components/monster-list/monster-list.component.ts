@@ -8,6 +8,7 @@ import { DialogService } from 'src/app/core/services/dialog.service';
 import { UiService } from 'src/app/core/services/ui.service';
 
 @Component({
+  standalone: false,
   selector: 'app-monster-list',
   templateUrl: './monster-list.component.html',
   styleUrls: ['./monster-list.component.scss']
@@ -123,8 +124,8 @@ export class MonsterListComponent implements OnInit, OnDestroy {
     }
   }
 
-  cdkTrackBy(i: number, facKey: String) {
-    return facKey;
+  cdkTrackBy(i: number, monster: Monster) {
+    return monster;
   }
 
   onClearSearchMonstersClick(searchBox) {

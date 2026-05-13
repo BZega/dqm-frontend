@@ -1,0 +1,166 @@
+<div class="breeding-plan-container">
+  <h2>DWM2 Breeding Planner</h2>
+
+  <!-- Mode Selection -->
+  <div class="mode-selection">
+    <mat-radio-group [(ngModel)]="breedingMode">
+      <mat-radio-button value="TypeAware">Type (Family-aware)</mat-radio-button>
+      <mat-radio-button value="Direct">Direct (Exact names only)</mat-radio-button>
+    </mat-radio-group>
+  </div>
+
+  <div class="selection-row">
+    <!-- Available Monsters -->
+    <div class="selection-panel">
+      <h3>Available Monsters</h3>
+      <mat-form-field appearance="outline" class="search-field">
+        <mat-label>Search Available</mat-label>
+        <input matInput [formControl]="availableSearchCtrl" [matAutocomplete]="availableAuto">
+        <mat-autocomplete #availableAuto="matAutocomplete" (optionSelected)="addAvailable($event.option.value)">
+          <mat-option *ngFor="let name of filteredAvailableNames | slice:0:100" [value]="name">
+            {{ name }}
+          </mat-option>
+        </mat-autocomplete>
+      </mat-form-field>
+      <mat-chip-listbox class="chip-list">
+        <mat-chip *ngFor="let name of selectedAvailable" (removed)="removeAvailable(name)" [removable]="true">
+          {{ name }}
+          <mat-icon matChipRemove>cancel</mat-icon>
+        </mat-chip>
+      </mat-chip-listbox>
+    </div>
+
+    <!-- Target Monsters -->
+    <div class="selection-panel">
+      <h3>Target Monsters</h3>
+      <mat-form-field appearance="outline" class="search-field">
+        <mat-label>Search Target</mat-label>
+        <input matInput [formControl]="targetSearchCtrl" [matAutocomplete]="targetAuto">
+        <mat-autocomplete #targetAuto="matAutocomplete" (optionSelected)="addTarget($event.option.value)">
+          <mat-option *ngFor="let name of filteredTargetNames | slice:0:100" [value]="name">
+            {{ name }}
+          </mat-option>
+        </mat-autocomplete>
+      </mat-form-field>
+      <mat-chip-listbox class="chip-list">
+        <mat-chip *ngFor="let name of selectedTargets" (removed)="removeTarget(name)" [removable]="true">
+          {{ name }}
+          <mat-icon matChipRemove>cancel</mat-icon>
+        </mat-chip>
+      </mat-chip-listbox>
+    </div>
+  </div>
+
+  <!-- Calculate Button -->
+  <button mat-raised-button color="primary" (click)="calculateBreedingPlan()"
+    [disabled]="loading || (selectedAvailable.length === 0 && selectedTargets.length === 0)">
+    Calculate Breeding Plan
+  </button>
+
+  <!-- Loading -->
+  <div *ngIf="loading" class="loading-spinner">
+    <mat-spinner diameter="40"></mat-spinner>
+  </div>
+
+  <!-- Error -->
+  <div *ngIf="errorMessage" class="error-message">
+    <p>{{ errorMessage }}</p>
+  </div>
+
+  <!-- Final Breeding Results -->
+  <div *ngIf="resultType === 'finalBreeding'" class="results-section">
+    <h3>Final Breeding Results for {{ selectedAvailable[0] }}</h3>
+    <p *ngIf="finalBreedingResults.length === 0">No final breeding destinations found.</p>
+    <mat-list *ngIf="finalBreedingResults.length > 0">
+      <mat-list-item *ngFor="let name of finalBreedingResults">{{ name }}</mat-list-item>
+    </mat-list>
+  </div>
+
+  <!-- Breeding Path Results -->
+  <div *ngIf="resultType === 'breedingPath'" class="results-section">
+    <h3>Breeding Path: {{ selectedAvailable[0] }} → {{ selectedTargets[0] }}</h3>
+    <p *ngIf="breedingPathResults.length === 0">Already the target monster!</p>
+    <table *ngIf="breedingPathResults.length > 0" mat-table [dataSource]="breedingPathResults" class="results-table">
+      <ng-container matColumnDef="step">
+        <th mat-header-cell *matHeaderCellDef>Step</th>
+        <td mat-cell *matCellDef="let pair; let i = index">{{ i + 1 }}</td>
+      </ng-container>
+      <ng-container matColumnDef="base">
+        <th mat-header-cell *matHeaderCellDef>Base</th>
+        <td mat-cell *matCellDef="let pair">{{ pair.baseMonster }}</td>
+      </ng-container>
+      <ng-container matColumnDef="mate">
+        <th mat-header-cell *matHeaderCellDef>Mate</th>
+        <td mat-cell *matCellDef="let pair">{{ pair.mateMonster }}</td>
+      </ng-container>
+      <ng-container matColumnDef="offspring">
+        <th mat-header-cell *matHeaderCellDef>Offspring</th>
+        <td mat-cell *matCellDef="let pair">{{ pair.offspringMonster }}</td>
+      </ng-container>
+      <tr mat-header-row *matHeaderRowDef="['step', 'base', 'mate', 'offspring']"></tr>
+      <tr mat-row *matRowDef="let row; columns: ['step', 'base', 'mate', 'offspring']"></tr>
+    </table>
+  </div>
+
+  <!-- Breeding Sources Results -->
+  <div *ngIf="resultType === 'breedingSources'" class="results-section">
+    <h3>Breeding Sources for {{ selectedTargets[0] }}</h3>
+    <p *ngIf="breedingSourcesResults.length === 0">No breeding sources found.</p>
+    <table *ngIf="breedingSourcesResults.length > 0" mat-table [dataSource]="breedingSourcesResults" class="results-table">
+      <ng-container matColumnDef="base">
+        <th mat-header-cell *matHeaderCellDef>Base</th>
+        <td mat-cell *matCellDef="let pair">{{ pair.baseMonster }}</td>
+      </ng-container>
+      <ng-container matColumnDef="mate">
+        <th mat-header-cell *matHeaderCellDef>Mate</th>
+        <td mat-cell *matCellDef="let pair">{{ pair.mateMonster }}</td>
+      </ng-container>
+      <ng-container matColumnDef="offspring">
+        <th mat-header-cell *matHeaderCellDef>Offspring</th>
+        <td mat-cell *matCellDef="let pair">{{ pair.offspringMonster }}</td>
+      </ng-container>
+      <tr mat-header-row *matHeaderRowDef="['base', 'mate', 'offspring']"></tr>
+      <tr mat-row *matRowDef="let row; columns: ['base', 'mate', 'offspring']"></tr>
+    </table>
+  </div>
+
+  <!-- Team Plan Results -->
+  <div *ngIf="resultType === 'teamPlan' && teamPlanResults" class="results-section">
+    <h3>Team Breeding Plan</h3>
+    <p><strong>Mode:</strong> {{ teamPlanResults.mode }}</p>
+
+    <div *ngIf="teamPlanResults.warnings?.length" class="warnings">
+      <mat-icon color="warn">warning</mat-icon>
+      <span *ngFor="let w of teamPlanResults.warnings">{{ w }}</span>
+    </div>
+
+    <div *ngFor="let target of teamPlanResults.targets" class="target-plan">
+      <h4>Target: {{ target.targetMonster }}</h4>
+      <p *ngIf="!target.canBreed" class="error-message">Cannot breed this monster with available resources.</p>
+      <div *ngIf="target.missing?.length" class="warnings">
+        <mat-icon color="warn">warning</mat-icon>
+        <span>Missing: <span *ngFor="let m of target.missing; let last = last">{{ m.name || m.monsterName || m }}{{ last ? '' : ', ' }}</span></span>
+      </div>
+      <table *ngIf="target.steps?.length" mat-table [dataSource]="target.steps" class="results-table">
+        <ng-container matColumnDef="step">
+          <th mat-header-cell *matHeaderCellDef>Step</th>
+          <td mat-cell *matCellDef="let pair; let i = index">{{ i + 1 }}</td>
+        </ng-container>
+        <ng-container matColumnDef="base">
+          <th mat-header-cell *matHeaderCellDef>Base</th>
+          <td mat-cell *matCellDef="let pair">{{ pair.baseMonster }}</td>
+        </ng-container>
+        <ng-container matColumnDef="mate">
+          <th mat-header-cell *matHeaderCellDef>Mate</th>
+          <td mat-cell *matCellDef="let pair">{{ pair.mateMonster }}</td>
+        </ng-container>
+        <ng-container matColumnDef="offspring">
+          <th mat-header-cell *matHeaderCellDef>Offspring</th>
+          <td mat-cell *matCellDef="let pair">{{ pair.offspringMonster }}</td>
+        </ng-container>
+        <tr mat-header-row *matHeaderRowDef="['step', 'base', 'mate', 'offspring']"></tr>
+        <tr mat-row *matRowDef="let row; columns: ['step', 'base', 'mate', 'offspring']"></tr>
+      </table>
+    </div>
+  </div>
+</div>
