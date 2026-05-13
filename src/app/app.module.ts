@@ -5,13 +5,14 @@ import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
 import { MonsterListComponent } from './components/monster-list/monster-list.component';
 import { MonsterMaxStatsComponent } from './components/monster-max-stats/monster-max-stats.component';
+import { DWM2MonsterLookupComponent } from './components/dwm2-monster-lookup/dwm2-monster-lookup.component';
+import { BreedingPlanComponent } from './components/breeding-plan/breeding-plan.component';
 import { PageNavigationComponent } from './shared/page-navigation.component';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
-import { MatCommonModule } from '@angular/material/core';
 import { MaterialModule } from './material/material.module';
 import { LayoutModule } from '@angular/cdk/layout';
 import { MatTableModule } from '@angular/material/table';
-import { HttpClientModule } from '@angular/common/http';
+import { provideHttpClient, withFetch } from '@angular/common/http';
 import { BrowserAnimationsModule } from "@angular/platform-browser/animations";
 
 @NgModule({
@@ -19,6 +20,8 @@ import { BrowserAnimationsModule } from "@angular/platform-browser/animations";
     AppComponent,
     MonsterListComponent,
     MonsterMaxStatsComponent,
+    DWM2MonsterLookupComponent,
+    BreedingPlanComponent,
     PageNavigationComponent
   ],
   imports: [
@@ -29,10 +32,9 @@ import { BrowserAnimationsModule } from "@angular/platform-browser/animations";
     MaterialModule,
     ReactiveFormsModule,
     MatTableModule,
-    HttpClientModule,
     BrowserAnimationsModule
   ],
-  providers: [],
+  providers: [provideHttpClient(withFetch())],
   bootstrap: [AppComponent]
 })
 export class AppModule { }

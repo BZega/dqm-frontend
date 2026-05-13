@@ -7,6 +7,7 @@ import { Monster, Stats } from 'src/app/core/models/monster';
 import { MonsterService } from 'src/app/core/services/monster.service';
 
 @Component({
+  standalone: false,
   selector: 'app-monster-max-stats',
   templateUrl: './monster-max-stats.component.html',
   styleUrls: ['./monster-max-stats.component.scss']

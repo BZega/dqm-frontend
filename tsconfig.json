@@ -1,4 +1,4 @@
-/* To learn more about this file see: https://angular.io/config/tsconfig. */
+/* To learn more about this file see: https://angular.dev/tools/cli/tsconfig */
 {
   "compileOnSave": false,
   "compilerOptions": {
@@ -8,20 +8,22 @@
     "declaration": false,
     "downlevelIteration": true,
     "experimentalDecorators": true,
-    "moduleResolution": "node",
+    "moduleResolution": "bundler",
     "importHelpers": true,
-    "target": "es2020",
-    "module": "es2020",
+    "target": "ES2022",
+    "module": "ES2022",
+    "useDefineForClassFields": false,
     "typeRoots": [
       "node_modules/@types"
     ],
     "lib": [
-      "es2020",
+      "ES2022",
       "dom"
     ]
   },
   "angularCompilerOptions": {
-    "fullTemplateTypeCheck": true,
-    "strictInjectionParameters": true
+    "strictInjectionParameters": true,
+    "strictInputAccessModifiers": true,
+    "strictTemplates": true
   }
 }
