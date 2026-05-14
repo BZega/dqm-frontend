@@ -1,10 +1,16 @@
 export interface DWM2Monster {
     name: string;
-    type: string;
+    type: number;
     breeds: BreedingPair[];
     directUsedIn: BreedingPair[];
     skills: string[];
 }
+
+export const MonsterTypeNames: string[] = [
+    'None', 'Slime', 'Dragon', 'Nature', 'Beast', 'Material',
+    'Demon', 'Undead', 'Boss', 'Bird', 'Plant', 'Bug',
+    'Devil', 'Zombie', 'Water'
+];
 
 export interface BreedingPair {
     baseMonster: string;
@@ -41,4 +47,21 @@ export interface ResourceSummary {
     consumed: number;
     remaining: number;
     shortage: number;
+}
+
+export interface BreedingPlanState {
+    selectedAvailable: string[];
+    selectedTargets: string[];
+    breedingMode: 'Direct' | 'TypeAware';
+    resultType: 'finalBreeding' | 'breedingPath' | 'breedingSources' | 'teamPlan' | null;
+    finalBreedingResults: string[];
+    breedingPathResults: BreedingPair[];
+    breedingSourcesResults: BreedingPair[];
+    teamPlanResults: TeamPlannerResponse | null;
+    errorMessage: string | null;
+}
+
+export interface MonsterLookupState {
+    searchValue: string;
+    selectedMonster: DWM2Monster | null;
 }

@@ -17,13 +17,13 @@
         <mat-label>Search Available</mat-label>
         <input matInput [formControl]="availableSearchCtrl" [matAutocomplete]="availableAuto">
         <mat-autocomplete #availableAuto="matAutocomplete" (optionSelected)="addAvailable($event.option.value)">
-          <mat-option *ngFor="let name of filteredAvailableNames | slice:0:100" [value]="name">
+          <mat-option *ngFor="let name of filteredAvailableNames | slice:0:50; trackBy: trackByName" [value]="name">
             {{ name }}
           </mat-option>
         </mat-autocomplete>
       </mat-form-field>
       <mat-chip-listbox class="chip-list">
-        <mat-chip *ngFor="let name of selectedAvailable" (removed)="removeAvailable(name)" [removable]="true">
+        <mat-chip *ngFor="let name of selectedAvailable; let i = index" (removed)="removeAvailable(i)" [removable]="true">
           {{ name }}
           <mat-icon matChipRemove>cancel</mat-icon>
         </mat-chip>
@@ -35,15 +35,15 @@
       <h3>Target Monsters</h3>
       <mat-form-field appearance="outline" class="search-field">
         <mat-label>Search Target</mat-label>
-        <input matInput [formControl]="targetSearchCtrl" [matAutocomplete]="targetAuto">
+        <input matInput [formControl]="targetSearchCtrl" [matAutocomplete]="targetAuto" [disabled]="selectedTargets.length >= 3">
         <mat-autocomplete #targetAuto="matAutocomplete" (optionSelected)="addTarget($event.option.value)">
-          <mat-option *ngFor="let name of filteredTargetNames | slice:0:100" [value]="name">
+          <mat-option *ngFor="let name of filteredTargetNames | slice:0:50; trackBy: trackByName" [value]="name">
             {{ name }}
           </mat-option>
         </mat-autocomplete>
       </mat-form-field>
       <mat-chip-listbox class="chip-list">
-        <mat-chip *ngFor="let name of selectedTargets" (removed)="removeTarget(name)" [removable]="true">
+        <mat-chip *ngFor="let name of selectedTargets; let i = index" (removed)="removeTarget(i)" [removable]="true">
           {{ name }}
           <mat-icon matChipRemove>cancel</mat-icon>
         </mat-chip>
@@ -72,7 +72,7 @@
     <h3>Final Breeding Results for {{ selectedAvailable[0] }}</h3>
     <p *ngIf="finalBreedingResults.length === 0">No final breeding destinations found.</p>
     <mat-list *ngIf="finalBreedingResults.length > 0">
-      <mat-list-item *ngFor="let name of finalBreedingResults">{{ name }}</mat-list-item>
+      <mat-list-item *ngFor="let name of finalBreedingResults" class="monster-link" (click)="goToLookup(name)">{{ name }}</mat-list-item>
     </mat-list>
   </div>
 
@@ -87,15 +87,15 @@
       </ng-container>
       <ng-container matColumnDef="base">
         <th mat-header-cell *matHeaderCellDef>Base</th>
-        <td mat-cell *matCellDef="let pair">{{ pair.baseMonster }}</td>
+        <td mat-cell *matCellDef="let pair" class="monster-link" (click)="goToLookup(pair.baseMonster)">{{ pair.baseMonster }}</td>
       </ng-container>
       <ng-container matColumnDef="mate">
         <th mat-header-cell *matHeaderCellDef>Mate</th>
-        <td mat-cell *matCellDef="let pair">{{ pair.mateMonster }}</td>
+        <td mat-cell *matCellDef="let pair" class="monster-link" (click)="goToLookup(pair.mateMonster)">{{ pair.mateMonster }}</td>
       </ng-container>
       <ng-container matColumnDef="offspring">
         <th mat-header-cell *matHeaderCellDef>Offspring</th>
-        <td mat-cell *matCellDef="let pair">{{ pair.offspringMonster }}</td>
+        <td mat-cell *matCellDef="let pair" class="monster-link" (click)="goToLookup(pair.offspringMonster)">{{ pair.offspringMonster }}</td>
       </ng-container>
       <tr mat-header-row *matHeaderRowDef="['step', 'base', 'mate', 'offspring']"></tr>
       <tr mat-row *matRowDef="let row; columns: ['step', 'base', 'mate', 'offspring']"></tr>
@@ -109,15 +109,15 @@
     <table *ngIf="breedingSourcesResults.length > 0" mat-table [dataSource]="breedingSourcesResults" class="results-table">
       <ng-container matColumnDef="base">
         <th mat-header-cell *matHeaderCellDef>Base</th>
-        <td mat-cell *matCellDef="let pair">{{ pair.baseMonster }}</td>
+        <td mat-cell *matCellDef="let pair" class="monster-link" (click)="goToLookup(pair.baseMonster)">{{ pair.baseMonster }}</td>
       </ng-container>
       <ng-container matColumnDef="mate">
         <th mat-header-cell *matHeaderCellDef>Mate</th>
-        <td mat-cell *matCellDef="let pair">{{ pair.mateMonster }}</td>
+        <td mat-cell *matCellDef="let pair" class="monster-link" (click)="goToLookup(pair.mateMonster)">{{ pair.mateMonster }}</td>
       </ng-container>
       <ng-container matColumnDef="offspring">
         <th mat-header-cell *matHeaderCellDef>Offspring</th>
-        <td mat-cell *matCellDef="let pair">{{ pair.offspringMonster }}</td>
+        <td mat-cell *matCellDef="let pair" class="monster-link" (click)="goToLookup(pair.offspringMonster)">{{ pair.offspringMonster }}</td>
       </ng-container>
       <tr mat-header-row *matHeaderRowDef="['base', 'mate', 'offspring']"></tr>
       <tr mat-row *matRowDef="let row; columns: ['base', 'mate', 'offspring']"></tr>
@@ -148,15 +148,15 @@
         </ng-container>
         <ng-container matColumnDef="base">
           <th mat-header-cell *matHeaderCellDef>Base</th>
-          <td mat-cell *matCellDef="let pair">{{ pair.baseMonster }}</td>
+          <td mat-cell *matCellDef="let pair" class="monster-link" (click)="goToLookup(pair.baseMonster)">{{ pair.baseMonster }}</td>
         </ng-container>
         <ng-container matColumnDef="mate">
           <th mat-header-cell *matHeaderCellDef>Mate</th>
-          <td mat-cell *matCellDef="let pair">{{ pair.mateMonster }}</td>
+          <td mat-cell *matCellDef="let pair" class="monster-link" (click)="goToLookup(pair.mateMonster)">{{ pair.mateMonster }}</td>
         </ng-container>
         <ng-container matColumnDef="offspring">
           <th mat-header-cell *matHeaderCellDef>Offspring</th>
-          <td mat-cell *matCellDef="let pair">{{ pair.offspringMonster }}</td>
+          <td mat-cell *matCellDef="let pair" class="monster-link" (click)="goToLookup(pair.offspringMonster)">{{ pair.offspringMonster }}</td>
         </ng-container>
         <tr mat-header-row *matHeaderRowDef="['step', 'base', 'mate', 'offspring']"></tr>
         <tr mat-row *matRowDef="let row; columns: ['step', 'base', 'mate', 'offspring']"></tr>

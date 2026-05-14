@@ -1,7 +1,8 @@
 import { ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
 import { FormControl } from '@angular/forms';
+import { Router } from '@angular/router';
 import { Subject, takeUntil, debounceTime } from 'rxjs';
-import { BreedingPair, TeamPlannerResponse } from 'src/app/core/models/dwm2-monster';
+import { BreedingPair, BreedingPlanState, TeamPlannerResponse } from 'src/app/core/models/dwm2-monster';
 import { DWM2Service } from 'src/app/core/services/dwm2.service';
 
 @Component({
@@ -37,9 +38,26 @@ export class BreedingPlanComponent implements OnInit, OnDestroy {
 
   private ngUnsubscribe = new Subject<void>();
 
-  constructor(private dwm2Service: DWM2Service, private cdr: ChangeDetectorRef) {}
+  constructor(private dwm2Service: DWM2Service, private cdr: ChangeDetectorRef, private router: Router) {}
+
+  goToLookup(monsterName: string): void {
+    this.router.navigate(['/dwm2-lookup'], { queryParams: { monster: monsterName } });
+  }
 
   ngOnInit(): void {
+    const saved = this.dwm2Service.breedingPlanState;
+    if (saved) {
+      this.selectedAvailable = saved.selectedAvailable;
+      this.selectedTargets = saved.selectedTargets;
+      this.breedingMode = saved.breedingMode;
+      this.resultType = saved.resultType;
+      this.finalBreedingResults = saved.finalBreedingResults;
+      this.breedingPathResults = saved.breedingPathResults;
+      this.breedingSourcesResults = saved.breedingSourcesResults;
+      this.teamPlanResults = saved.teamPlanResults;
+      this.errorMessage = saved.errorMessage;
+    }
+
     this.dwm2Service.getAllMonsterNames().subscribe(names => {
       this.allMonsterNames = names;
       this.filteredAvailableNames = names;
@@ -48,22 +66,39 @@ export class BreedingPlanComponent implements OnInit, OnDestroy {
 
     this.availableSearchCtrl.valueChanges.pipe(
       takeUntil(this.ngUnsubscribe),
-      debounceTime(150)
+      debounceTime(50)
     ).subscribe(value => {
       this.filteredAvailableNames = this.filterNames(value || '');
+      this.cdr.detectChanges();
     });
 
     this.targetSearchCtrl.valueChanges.pipe(
       takeUntil(this.ngUnsubscribe),
-      debounceTime(150)
+      debounceTime(50)
     ).subscribe(value => {
       this.filteredTargetNames = this.filterNames(value || '');
+      this.cdr.detectChanges();
     });
   }
 
   ngOnDestroy(): void {
+    this.saveState();
     this.ngUnsubscribe.next();
     this.ngUnsubscribe.complete();
+  }
+
+  private saveState(): void {
+    this.dwm2Service.breedingPlanState = {
+      selectedAvailable: this.selectedAvailable,
+      selectedTargets: this.selectedTargets,
+      breedingMode: this.breedingMode,
+      resultType: this.resultType,
+      finalBreedingResults: this.finalBreedingResults,
+      breedingPathResults: this.breedingPathResults,
+      breedingSourcesResults: this.breedingSourcesResults,
+      teamPlanResults: this.teamPlanResults,
+      errorMessage: this.errorMessage,
+    };
   }
 
   filterNames(search: string): string[] {
@@ -72,26 +107,29 @@ export class BreedingPlanComponent implements OnInit, OnDestroy {
     return this.allMonsterNames.filter(n => n.toLowerCase().includes(lower));
   }
 
+  trackByName(index: number, name: string): string {
+    return name;
+  }
+
   addAvailable(name: string): void {
-    if (!this.selectedAvailable.includes(name)) {
-      this.selectedAvailable = [...this.selectedAvailable, name];
-    }
+    this.selectedAvailable = [...this.selectedAvailable, name];
     this.availableSearchCtrl.setValue('');
   }
 
-  removeAvailable(name: string): void {
-    this.selectedAvailable = this.selectedAvailable.filter(n => n !== name);
+  removeAvailable(index: number): void {
+    this.selectedAvailable = this.selectedAvailable.filter((_, i) => i !== index);
   }
 
   addTarget(name: string): void {
+    if (this.selectedTargets.length >= 3) return;
     if (!this.selectedTargets.includes(name)) {
       this.selectedTargets = [...this.selectedTargets, name];
     }
     this.targetSearchCtrl.setValue('');
   }
 
-  removeTarget(name: string): void {
-    this.selectedTargets = this.selectedTargets.filter(n => n !== name);
+  removeTarget(index: number): void {
+    this.selectedTargets = this.selectedTargets.filter((_, i) => i !== index);
   }
 
   calculateBreedingPlan(): void {

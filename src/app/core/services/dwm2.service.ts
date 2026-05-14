@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable } from 'rxjs';
-import { BreedingPair, DWM2Monster, TeamPlannerRequest, TeamPlannerResponse } from '../models/dwm2-monster';
+import { BehaviorSubject, Observable } from 'rxjs';
+import { BreedingPair, BreedingPlanState, DWM2Monster, MonsterLookupState, TeamPlannerRequest, TeamPlannerResponse } from '../models/dwm2-monster';
 
 @Injectable({
     providedIn: 'root'
@@ -10,11 +10,18 @@ export class DWM2Service {
 
     private readonly baseUrl = 'https://localhost:7123/DWM2';
     private readonly teamPlannerUrl = 'https://localhost:7123/TeamPlanner';
+    private allMonsterNames$ = new BehaviorSubject<string[]>([]);
+    breedingPlanState: BreedingPlanState | null = null;
+    monsterLookupState: MonsterLookupState | null = null;
 
-    constructor(private http: HttpClient) {}
+    constructor(private http: HttpClient) {
+        this.http.get<string[]>(`${this.baseUrl}/monsters`).subscribe(names => {
+            this.allMonsterNames$.next(names);
+        });
+    }
 
     getAllMonsterNames(): Observable<string[]> {
-        return this.http.get<string[]>(`${this.baseUrl}/monsters`);
+        return this.allMonsterNames$.asObservable();
     }
 
     getMonsterByName(name: string): Observable<DWM2Monster> {
