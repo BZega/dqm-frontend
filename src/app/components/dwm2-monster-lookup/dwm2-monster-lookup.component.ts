@@ -1,7 +1,8 @@
 import { ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
 import { FormControl } from '@angular/forms';
+import { ActivatedRoute } from '@angular/router';
 import { Subject, takeUntil, debounceTime } from 'rxjs';
-import { DWM2Monster } from 'src/app/core/models/dwm2-monster';
+import { DWM2Monster, MonsterTypeNames } from 'src/app/core/models/dwm2-monster';
 import { DWM2Service } from 'src/app/core/services/dwm2.service';
 
 @Component({
@@ -15,17 +16,32 @@ export class DWM2MonsterLookupComponent implements OnInit, OnDestroy {
   allMonsterNames: string[] = [];
   filteredMonsterNames: string[] = [];
   selectedMonster: DWM2Monster | null = null;
+  selectedMonsterTypeName = '';
   loading = false;
 
   private ngUnsubscribe = new Subject<void>();
 
-  constructor(private dwm2Service: DWM2Service, private cdr: ChangeDetectorRef) {}
+  constructor(private dwm2Service: DWM2Service, private cdr: ChangeDetectorRef, private route: ActivatedRoute) {}
 
   ngOnInit(): void {
+    const saved = this.dwm2Service.monsterLookupState;
+    const monsterParam = this.route.snapshot.queryParamMap.get('monster');
+
+    if (!monsterParam && saved) {
+      this.searchCtrl.setValue(saved.searchValue);
+      this.selectedMonster = saved.selectedMonster;
+      this.selectedMonsterTypeName = saved.selectedMonster ? (MonsterTypeNames[saved.selectedMonster.type] ?? 'Unknown') : '';
+    }
+
     this.dwm2Service.getAllMonsterNames().subscribe(names => {
       this.allMonsterNames = names;
       this.filteredMonsterNames = names;
       this.cdr.detectChanges();
+
+      if (monsterParam && names.includes(monsterParam)) {
+        this.searchCtrl.setValue(monsterParam);
+        this.onMonsterSelect(monsterParam);
+      }
     });
 
     this.searchCtrl.valueChanges.pipe(
@@ -37,6 +53,10 @@ export class DWM2MonsterLookupComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
+    this.dwm2Service.monsterLookupState = {
+      searchValue: this.searchCtrl.value || '',
+      selectedMonster: this.selectedMonster,
+    };
     this.ngUnsubscribe.next();
     this.ngUnsubscribe.complete();
   }
@@ -57,11 +77,13 @@ export class DWM2MonsterLookupComponent implements OnInit, OnDestroy {
     this.dwm2Service.getMonsterByName(name).subscribe({
       next: monster => {
         this.selectedMonster = monster;
+        this.selectedMonsterTypeName = MonsterTypeNames[monster.type] ?? 'Unknown';
         this.loading = false;
         this.cdr.detectChanges();
       },
       error: () => {
         this.selectedMonster = null;
+        this.selectedMonsterTypeName = '';
         this.loading = false;
         this.cdr.detectChanges();
       }

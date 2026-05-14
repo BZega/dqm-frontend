@@ -14,6 +14,20 @@
   }
 }
 
+.monster-link {
+  cursor: pointer;
+  color: #90caf9 !important;
+  text-decoration: underline;
+
+  &:hover {
+    color: #bbdefb !important;
+  }
+}
+
+.autocomplete-viewport {
+  height: 240px;
+}
+
 .mode-selection {
   margin-bottom: 24px;
   text-align: center;
