@@ -11,6 +11,7 @@ export class DWM2Service {
     private readonly baseUrl = 'https://localhost:7123/DWM2';
     private readonly teamPlannerUrl = 'https://localhost:7123/TeamPlanner';
     private allMonsterNames$ = new BehaviorSubject<string[]>([]);
+    private selectedMonster$ = new BehaviorSubject<DWM2Monster | null>(null);
     breedingPlanState: BreedingPlanState | null = null;
     monsterLookupState: MonsterLookupState | null = null;
 
@@ -26,6 +27,21 @@ export class DWM2Service {
 
     getMonsterByName(name: string): Observable<DWM2Monster> {
         return this.http.get<DWM2Monster>(`${this.baseUrl}/monster/${encodeURIComponent(name)}`);
+    }
+
+    selectMonster(name: string): void {
+        this.selectedMonster$.next(null);
+        this.getMonsterByName(name).subscribe(monster => {
+            this.selectedMonster$.next(monster);
+        });
+    }
+
+    getSelectedMonster(): Observable<DWM2Monster | null> {
+        return this.selectedMonster$.asObservable();
+    }
+
+    setSelectedMonster(monster: DWM2Monster | null): void {
+        this.selectedMonster$.next(monster);
     }
 
     getFinalBreeding(name: string): Observable<string[]> {

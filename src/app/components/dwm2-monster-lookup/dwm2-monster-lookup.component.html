@@ -5,19 +5,13 @@
     <mat-label>Search Monster</mat-label>
     <input matInput [formControl]="searchCtrl" [matAutocomplete]="auto">
     <mat-autocomplete #auto="matAutocomplete" (optionSelected)="onMonsterSelect($event.option.value)">
-      <cdk-virtual-scroll-viewport itemSize="48" class="autocomplete-viewport">
-        <mat-option *cdkVirtualFor="let name of filteredMonsterNames" [value]="name">
-          {{ name }}
-        </mat-option>
-      </cdk-virtual-scroll-viewport>
+      <mat-option *ngFor="let name of filteredMonsterNames | slice:0:50; trackBy: trackByName" [value]="name">
+        {{ name }}
+      </mat-option>
     </mat-autocomplete>
   </mat-form-field>
 
-  <div *ngIf="loading" class="loading-spinner">
-    <mat-spinner diameter="40"></mat-spinner>
-  </div>
-
-  <div *ngIf="selectedMonster && !loading" class="monster-details">
+  <div *ngIf="selectedMonster" class="monster-details">
     <mat-card>
       <mat-card-header>
         <mat-card-title>{{ selectedMonster.name }}</mat-card-title>
@@ -39,15 +33,15 @@
           <table mat-table [dataSource]="selectedMonster.breeds" class="breeding-table">
             <ng-container matColumnDef="base">
               <th mat-header-cell *matHeaderCellDef>Base</th>
-              <td mat-cell *matCellDef="let pair">{{ pair.baseMonster }}</td>
+              <td mat-cell *matCellDef="let pair" class="monster-link" (click)="onMonsterSelect(pair.baseMonster)">{{ pair.baseMonster }}</td>
             </ng-container>
             <ng-container matColumnDef="mate">
               <th mat-header-cell *matHeaderCellDef>Mate</th>
-              <td mat-cell *matCellDef="let pair">{{ pair.mateMonster }}</td>
+              <td mat-cell *matCellDef="let pair" class="monster-link" (click)="onMonsterSelect(pair.mateMonster)">{{ pair.mateMonster }}</td>
             </ng-container>
             <ng-container matColumnDef="offspring">
               <th mat-header-cell *matHeaderCellDef>Offspring</th>
-              <td mat-cell *matCellDef="let pair">{{ pair.offspringMonster }}</td>
+              <td mat-cell *matCellDef="let pair" class="monster-link" (click)="onMonsterSelect(pair.offspringMonster)">{{ pair.offspringMonster }}</td>
             </ng-container>
             <tr mat-header-row *matHeaderRowDef="['base', 'mate', 'offspring']"></tr>
             <tr mat-row *matRowDef="let row; columns: ['base', 'mate', 'offspring']"></tr>
@@ -60,15 +54,15 @@
           <table mat-table [dataSource]="selectedMonster.directUsedIn" class="breeding-table">
             <ng-container matColumnDef="base">
               <th mat-header-cell *matHeaderCellDef>Base</th>
-              <td mat-cell *matCellDef="let pair">{{ pair.baseMonster }}</td>
+              <td mat-cell *matCellDef="let pair" class="monster-link" (click)="onMonsterSelect(pair.baseMonster)">{{ pair.baseMonster }}</td>
             </ng-container>
             <ng-container matColumnDef="mate">
               <th mat-header-cell *matHeaderCellDef>Mate</th>
-              <td mat-cell *matCellDef="let pair">{{ pair.mateMonster }}</td>
+              <td mat-cell *matCellDef="let pair" class="monster-link" (click)="onMonsterSelect(pair.mateMonster)">{{ pair.mateMonster }}</td>
             </ng-container>
             <ng-container matColumnDef="offspring">
               <th mat-header-cell *matHeaderCellDef>Offspring</th>
-              <td mat-cell *matCellDef="let pair">{{ pair.offspringMonster }}</td>
+              <td mat-cell *matCellDef="let pair" class="monster-link" (click)="onMonsterSelect(pair.offspringMonster)">{{ pair.offspringMonster }}</td>
             </ng-container>
             <tr mat-header-row *matHeaderRowDef="['base', 'mate', 'offspring']"></tr>
             <tr mat-row *matRowDef="let row; columns: ['base', 'mate', 'offspring']"></tr>
