@@ -48,6 +48,16 @@
   width: 100%;
 }
 
+.monster-link {
+  cursor: pointer;
+  color: #90caf9 !important;
+  text-decoration: underline;
+
+  &:hover {
+    color: #bbdefb !important;
+  }
+}
+
 .no-breeding {
   margin-top: 16px;
   color: #bdbdbd;

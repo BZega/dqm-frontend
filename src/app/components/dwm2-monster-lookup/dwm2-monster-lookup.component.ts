@@ -17,20 +17,28 @@ export class DWM2MonsterLookupComponent implements OnInit, OnDestroy {
   filteredMonsterNames: string[] = [];
   selectedMonster: DWM2Monster | null = null;
   selectedMonsterTypeName = '';
-  loading = false;
 
   private ngUnsubscribe = new Subject<void>();
 
   constructor(private dwm2Service: DWM2Service, private cdr: ChangeDetectorRef, private route: ActivatedRoute) {}
 
   ngOnInit(): void {
-    const saved = this.dwm2Service.monsterLookupState;
     const monsterParam = this.route.snapshot.queryParamMap.get('monster');
 
+    this.dwm2Service.getSelectedMonster().pipe(
+      takeUntil(this.ngUnsubscribe)
+    ).subscribe(monster => {
+      this.selectedMonster = monster;
+      this.selectedMonsterTypeName = monster ? (MonsterTypeNames[monster.type] ?? 'Unknown') : '';
+      this.cdr.detectChanges();
+    });
+
+    const saved = this.dwm2Service.monsterLookupState;
     if (!monsterParam && saved) {
-      this.searchCtrl.setValue(saved.searchValue);
-      this.selectedMonster = saved.selectedMonster;
-      this.selectedMonsterTypeName = saved.selectedMonster ? (MonsterTypeNames[saved.selectedMonster.type] ?? 'Unknown') : '';
+      this.searchCtrl.setValue(saved.searchValue, { emitEvent: false });
+      if (saved.selectedMonster) {
+        this.dwm2Service.setSelectedMonster(saved.selectedMonster);
+      }
     }
 
     this.dwm2Service.getAllMonsterNames().subscribe(names => {
@@ -39,16 +47,17 @@ export class DWM2MonsterLookupComponent implements OnInit, OnDestroy {
       this.cdr.detectChanges();
 
       if (monsterParam && names.includes(monsterParam)) {
-        this.searchCtrl.setValue(monsterParam);
-        this.onMonsterSelect(monsterParam);
+        this.searchCtrl.setValue(monsterParam, { emitEvent: false });
+        this.dwm2Service.selectMonster(monsterParam);
       }
     });
 
     this.searchCtrl.valueChanges.pipe(
       takeUntil(this.ngUnsubscribe),
-      debounceTime(150)
+      debounceTime(50)
     ).subscribe(value => {
       this.filterMonsters(value || '');
+      this.cdr.detectChanges();
     });
   }
 
@@ -73,20 +82,11 @@ export class DWM2MonsterLookupComponent implements OnInit, OnDestroy {
   }
 
   onMonsterSelect(name: string): void {
-    this.loading = true;
-    this.dwm2Service.getMonsterByName(name).subscribe({
-      next: monster => {
-        this.selectedMonster = monster;
-        this.selectedMonsterTypeName = MonsterTypeNames[monster.type] ?? 'Unknown';
-        this.loading = false;
-        this.cdr.detectChanges();
-      },
-      error: () => {
-        this.selectedMonster = null;
-        this.selectedMonsterTypeName = '';
-        this.loading = false;
-        this.cdr.detectChanges();
-      }
-    });
+    this.searchCtrl.setValue(name, { emitEvent: false });
+    this.dwm2Service.selectMonster(name);
+  }
+
+  trackByName(index: number, name: string): string {
+    return name;
   }
 }
